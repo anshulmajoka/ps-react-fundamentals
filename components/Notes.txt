@@ -1,0 +1,57 @@
+Rendering and Re-rendering
+--------------------------
+Rendering means executing a component’s function, not updating the browser directly. 
+The browser update is handled by React through reconciliation.
+
+When a component’s state changes, React re-renders the component by re-executing its function. 
+For example, pressing an Add button in the HouseList component changes its state, causing React to re-render the component and execute the function again, reflecting the state change in the JSX
+
+State is needed to let React know when to update the UI and to preserve data across re-renders. 
+React stores state internally using in-memory arrays, ensuring the state persists even when the component re-renders. 
+Calls to useState initialize the state, and React maintains these states in an internal array. 
+This mechanism is why useState cannot be called conditionally, as it would disrupt this state-keeping system.
+
+
+The Rendering Process
+----------------------
+Our demo application has a component hierarchy where the App component renders Banner and HouseList,and HouseList renders multiple HouseRow components.
+When the state of HouseList changes, React flags the component for re-rendering, queues it, and then re-renders the component along with its child components, like HouseRow. 
+This process appears instantaneous to humans.
+To observe re-renders, you can set breakpoints in the component functions or use the "Highlight updates when components render" feature in React Developer Tools. 
+Although re-rendering can seem like it might cause performance issues due to cascading effects, React uses reconciliation to minimize actual browser updates, thus optimizing performance. 
+However, it's important to consider this when designing your application to avoid excessive re-renders. 
+
+Pure Functions and Memoizing Components
+---------------------------------------
+React relies on pure functions for efficiency. A pure function always returns the same result given the same inputs, making them easy to test, predictable, and cacheable. 
+In React, a component's function should be pure, meaning it should return the same JSX for the same props and state. 
+For instance, the HouseRow component is pure since it renders the same JSX given the same props.
+
+However, when a parent component like HouseList re-renders, all its child components, such as HouseRow, also re-render. To avoid unnecessary re-renders, you can use React.memo to memoize a component, preventing it from re-rendering if its props haven't changed. This is done by wrapping the component with React.memo.
+
+While using React.memo can be beneficial, it also has performance overhead. It should only be used when it demonstrably improves performance, typically measured using tools like the React Developer Tools profile tool. Memoization is most effective for pure functional components that often render with the same props, and for non-trivial JSX returns. 
+Note that React.memo only performs a shallow comparison of props, which is important to understand when working with complex objects.
+
+Side Effects and the Effect Hook
+---------------------------------
+
+Pure functions in React components can become impractical when unpredictable operations are needed. These operations, known as side effects or effects, include actions like API calls, interacting with browser APIs, and using timing functions. 
+Since effects can be unreliable, they should be separated from the pure function.
+
+To handle effects, React provides the useEffect hook. 
+This hook takes a function that executes after the component's pure function runs and the browser updates. For instance, to fetch data from an API, you can use useEffect to call the API after the component mounts. The fetched data can then be used to update the component's state with useState.
+
+The Memo Hook
+--------------
+The useMemo hook can optimize component performance by memoizing values within components, not just component outputs. For example, a time-consuming calculation involving a list of houses could slow down the application if placed directly in the component, as it would run on every re-render.
+
+Using useMemo, the calculation runs only when the component first renders or when the houses array changes. The hook takes a function as its first parameter (performing the calculation) and a dependency array as its second parameter (such as houses). If houses doesn't change, useMemo returns the previously calculated value, avoiding unnecessary recalculations.
+
+However, wrapping every operation in useMemo isn't advisable due to its overhead. It's essential to measure performance to determine if useMemo actually provides a benefit.
+
+The Ref Hook
+------------
+The useRef hook stores values that persist between renders without causing re-renders, unlike state. 
+It's useful for tasks like counting component renders or accessing DOM elements. useRef returns an object with a current property that holds the value, which can be modified directly. 
+For example, you can use useRef to keep a render count or to focus an input element by referencing the DOM node. 
+This avoids infinite loops that would occur if state were used for such purposes. Next, we'll explore conditional rendering and sharing state in React components.

@@ -5,6 +5,7 @@ const HouseList = () => {
   const [houses, setHouses] = useState([]);
 
   useEffect(() => {
+    
     const fetchHouses = async () => {
       const response = await fetch("/api/houses");
       const houses = await response.json();
